@@ -1,1 +1,0 @@
-# Statistical Beta estimation module
