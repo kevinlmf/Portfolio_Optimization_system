@@ -1,0 +1,57 @@
+================================================================================
+INTEGRATED FACTOR ANALYSIS REPORT
+================================================================================
+
+1. FACTOR MODEL ANALYSIS
+--------------------------------------------------------------------------------
+
+FAMA FRENCH 3 MODEL:
+  Alpha (annualized): 0.0632
+  Alpha t-stat: 1.47
+  R²: 0.8248
+  Adj. R²: 0.8244
+  Factor Loadings:
+    MKT     :  1.0815 (t= 50.00) ***
+    SMB     :  0.1299 (t=  5.70) ***
+    HML     : -0.0575 (t= -2.81) ***
+
+CARHART 4 MODEL:
+  Alpha (annualized): 0.0313
+  Alpha t-stat: 0.72
+  R²: 0.8264
+  Adj. R²: 0.8259
+  Factor Loadings:
+    MKT     :  1.0988 (t= 49.89) ***
+    SMB     :  0.1261 (t=  5.55) ***
+    HML     : -0.0068 (t= -0.28) 
+    MOM     :  0.0853 (t=  3.74) ***
+
+2. RETURN ATTRIBUTION
+--------------------------------------------------------------------------------
+
+  Total Return: 17.70%
+  Explained by Factors: 17.70%
+  R²: 82.6%
+
+  Factor Contributions:
+    MKT     :   7.11% ( 40.2%)
+    SMB     :   2.07% ( 11.7%)
+    HML     :   0.27% (  1.5%)
+    MOM     :   5.12% ( 29.0%)
+    Alpha   :   3.13% ( 17.7%)
+    Residual:  -0.00% ( -0.0%)
+
+3. FACTOR RISK DECOMPOSITION
+--------------------------------------------------------------------------------
+
+  Total Volatility: 24.29%
+  Factor Volatility: 22.11% (82.8%)
+  Idiosyncratic Vol: 10.07%
+
+  Factor Risk Contributions:
+    MKT     :  92.7%
+    SMB     :   8.2%
+    HML     :   0.3%
+    MOM     :  -1.1%
+    RMW     :   0.0%
+    CMA     :  -0.1%

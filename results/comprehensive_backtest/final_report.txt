@@ -13,9 +13,9 @@ Backtest Performance:
   Annual Volatility:    10.56%
   Sharpe Ratio:         0.5969
   Max Drawdown:        -19.65%
-  Win Rate:             52.14%
+  Win Rate:             52.06%
 
 Monte Carlo Validation:
-  Expected Value:     $  1.0800
-  95% VaR:           $  0.9172
-  Prob of Profit:       76.88%
+  Expected Value:     $  1.0795
+  95% VaR:           $  0.9135
+  Prob of Profit:       76.95%
