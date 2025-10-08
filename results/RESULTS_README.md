@@ -24,26 +24,6 @@ This directory contains analysis outputs from the **Portfolio Optimization Syste
 
 ---
 
-## 🗑️ Deprecated Files (Can Be Removed)
-
-The following early test files have been replaced by the `historical_analysis` module:
-
-- `adaptive_optimization_comparison.csv`  
-- `adaptive_optimization_results.png`  
-- `intelligent_selector_demo.png`  
-- `smart_optimizer/` *(entire directory)*  
-
-**To clean up old files:**
-```bash
-cd results
-rm -f adaptive_optimization_comparison.csv
-rm -f adaptive_optimization_results.png
-rm -f intelligent_selector_demo.png
-rm -f .DS_Store
-rm -rf smart_optimizer/
-```
-
----
 
 ## 📝 How to Regenerate Results
 
