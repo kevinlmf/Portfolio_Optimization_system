@@ -1,13 +1,12 @@
 # Portfolio Optimization System
 
-This repository combines AI-driven market regime detection with modern portfolio optimization for adaptive multi-asset allocation.
+Market-adaptive portfolio optimization system integrating 133-factor analysis, market regime detection, intelligent method selection, and multi-asset allocation.
 
-The system demonstrates a production-grade quantitative architecture with:
-- 5 market regime detection and adaptive strategy selection
+**Key Highlights:**
+- 5 market regimes with adaptive strategy selection
 - 6 optimization methods including globally optimal sparse Sharpe portfolio
-- Factor analysis and selection from 133-factor library
-- Professional backtesting with transaction costs and Monte Carlo validation
-- 16-year historical analysis (2008-2024) delivering 12.8% annual return with 0.677 Sharpe ratio
+- 133-factor library with 6 selection methods (IC, LASSO, Random Forest, etc.)
+- 16-year backtest (2008-2024): 12.8% annual return, 0.677 Sharpe ratio, 6.6% alpha
 
 ---
 
@@ -58,55 +57,17 @@ Portfolio_Optimization_system/
 
 ---
 
-## Historical Performance (2008-2024)
+## Core Features
 
-**Overall Results:**
-- Annual Return: 12.8%
-- Sharpe Ratio: 0.677
-- Alpha vs SPY: 6.6%
-- Max Drawdown: -20.0%
-- Beta: 0.57
+### 1. Factor Analysis
+- **133-factor library** from Factor Mining System (technical, fundamental, macro, ML, beta)
+- **6 selection methods**: IC Analysis, LASSO, Random Forest, Mutual Information, Forward Selection, Factor Returns
+- **Style factors**: Fama-French 3/5-factor, Carhart 4-factor models
+- **Factor timing**: Momentum-based rotation and tilting
+- **Attribution**: Risk/return decomposition by factor
 
-**Period Breakdown:**
-
-| Period | Total Return | Sharpe | Max DD | Alpha |
-|--------|--------------|--------|--------|-------|
-| 2008-2010 (Crisis) | 39.2% | 0.514 | -21.1% | 11.1% |
-| 2010-2015 (Recovery) | 59.4% | 0.566 | -8.8% | 2.7% |
-| 2015-2020 (Pre-COVID) | 98.9% | 0.777 | -23.2% | 4.6% |
-| 2020-2025 (COVID+) | 201.5% | 0.852 | -27.0% | 7.8% |
-
----
-
-## Key Features
-
-### Factor Analysis System
-
-Comprehensive multi-factor analysis framework:
-
-| Feature | Description | Methods |
-|---------|-------------|---------|
-| **Factor Selection** | Identify most important factors from 133-factor library | IC, LASSO, Random Forest, Mutual Information |
-| **Style Factors** | Fama-French factor models | FF3, FF5, Carhart 4-factor |
-| **Statistical Factors** | PCA-based factor extraction | Principal components |
-| **Factor Timing** | Momentum-based factor rotation | Factor momentum signals |
-| **Factor Tilting** | Factor-tilted portfolio construction | Custom exposure targets |
-| **Risk Attribution** | Factor-based risk decomposition | Systematic vs idiosyncratic |
-| **Return Attribution** | Performance attribution by factor | Alpha generation analysis |
-
-**Integration with 133-Factor Library**: Seamlessly connects with the Factor Mining System (technical, fundamental, macro, ML, beta factors)
-
-**Factor Selection Methods**:
-- **IC Analysis**: Information Coefficient (correlation with future returns)
-- **LASSO Regularization**: Sparse factor selection with L1 penalty
-- **Random Forest**: Tree-based feature importance
-- **Mutual Information**: Non-linear dependency detection
-- **Forward Selection**: Stepwise R-squared improvement
-- **Factor Returns**: Long-short portfolio Sharpe ratios
-
-### Market Regime Detection
-
-Automatically identifies 5 market conditions and adapts strategy:
+### 2. Market Regime Detection
+Adaptive strategy selection across 5 regimes:
 
 | Regime | Strategy | Holdings |
 |--------|----------|----------|
@@ -116,40 +77,31 @@ Automatically identifies 5 market conditions and adapts strategy:
 | High Volatility | Min Variance | 15-20 |
 | Crisis | Equal Weight | All |
 
-### Optimization Methods
+### 3. Optimization Methods
+Max Sharpe • Min Variance • Risk Parity • Equal Weight • Sparse Sharpe (NeurIPS 2024) • Factor-Tilted
 
-1. **Max Sharpe**: Maximize risk-adjusted returns
-2. **Min Variance**: Minimize portfolio volatility
-3. **Risk Parity**: Equalize risk contribution
-4. **Equal Weight**: 1/N allocation (robust fallback)
-5. **Sparse Sharpe**: Globally optimal subset selection (NeurIPS 2024)
-6. **Factor-Tilted**: Target specific factor exposures
+### 4. Asset Universe
+**Equities:** AAPL, MSFT, GOOGL, JPM, JNJ • **ETFs:** SPY, QQQ, VTI, VEA, VWO • **Bonds:** TLT, IEF, LQD, HYG • **Commodities:** GLD, SLV, DBC • **Crypto:** BTC-USD, ETH-USD
 
-### Asset Coverage
+### 5. Performance (2008-2024)
+12.8% annual return • 0.677 Sharpe • 6.6% alpha • -20% max drawdown • 0.57 beta
 
-- Equities: AAPL, MSFT, GOOGL, JPM, JNJ
-- ETFs: SPY, QQQ, VTI, VEA, VWO
-- Bonds: TLT, IEF, LQD, HYG
-- Commodities: GLD, SLV, DBC
-- Crypto: BTC-USD, ETH-USD
+*See [HISTORICAL_ANALYSIS_SUMMARY.md](HISTORICAL_ANALYSIS_SUMMARY.md) for period-by-period breakdown*
 
 ---
 
 ## Usage
 
-### Basic Pipeline
-
 ```python
 from scripts.comprehensive_portfolio_system import ComprehensivePortfolioSystem
 
-# Initialize
+# Initialize and run full pipeline
 system = ComprehensivePortfolioSystem(
     start_date='2020-01-01',
     transaction_cost=0.001,
     rebalance_frequency='monthly'
 )
 
-# Run pipeline
 system.setup_portfolio(scenario='all_assets')
 system.detect_market_regime()
 system.run_backtest(test_multiple_methods=True)
@@ -157,121 +109,23 @@ system.run_monte_carlo_validation(n_simulations=10000)
 system.generate_final_report()
 ```
 
-### Factor Selection
-
-```python
-from strategy.factor_selection import FactorSelector
-
-# Initialize
-selector = FactorSelector(factor_data, returns, forward_periods=[1, 5, 10, 20])
-
-# Run comprehensive analysis (6 methods)
-importance_report = selector.generate_factor_importance_report(
-    target_returns=portfolio_returns,
-    top_n=20
-)
-
-# Get top factors
-top_factors = importance_report.head(10)['factor'].tolist()
-```
-
-### Factor Analysis
-
-```python
-from strategy.integrated_factor_system import IntegratedFactorSystem
-
-# Initialize factor system
-factor_system = IntegratedFactorSystem(returns, prices, risk_free_rate=0.03)
-
-# Construct Fama-French style factors
-factors = factor_system.construct_style_factors(market_proxy=spy_returns)
-
-# Run factor timing analysis
-timing_results = factor_system.run_factor_timing(lookback=60, top_n_factors=3)
-
-# Create factor-tilted portfolio
-weights = factor_system.create_factor_tilted_portfolio(
-    tilt_factors=['MKT', 'MOM'],
-    tilt_strength=1.0,
-    base_method='risk_parity'
-)
-
-# Analyze portfolio factor exposures
-portfolio_returns = (returns * weights).sum(axis=1)
-report = factor_system.analyze_portfolio_factors(
-    portfolio_returns,
-    portfolio_weights=weights,
-    models=['fama_french_3', 'carhart_4']
-)
-
-# Optimize for target factor exposures
-weights = factor_system.optimize_factor_exposures(
-    target_exposures={'MKT': 0.8, 'SMB': 0.2, 'MOM': 0.3}
-)
-```
+*See [COMPREHENSIVE_SYSTEM_GUIDE.md](COMPREHENSIVE_SYSTEM_GUIDE.md) and [FACTOR_ANALYSIS_GUIDE.md](FACTOR_ANALYSIS_GUIDE.md) for detailed API documentation*
 
 ---
 
-## Output Files
+## Output & Documentation
 
-Results saved to `results/`:
+**Key Output Files** (saved to `results/`):
+- `factor_importance_report.csv` - Factor rankings by IC, Sharpe, selection count
+- `integrated_factor_report.txt` - Alpha, beta, R², return attribution
+- `performance_metrics.csv` - Sharpe, Sortino, Calmar, max drawdown, alpha, beta
+- `portfolio_values.csv` & `weights_history.csv` - Time series results
 
-```
-results/
-├── historical_analysis/
-│   ├── period_comparison.csv
-│   └── comprehensive_comparison.png
-├── comprehensive_backtest/
-│   ├── portfolio_values.csv
-│   ├── weights_history.csv
-│   ├── performance_metrics.csv
-│   └── final_report.txt
-└── factor_analysis/
-    ├── factor_importance_report.csv        # Factor rankings (KEY FILE)
-    ├── factor_strategy_comparison.csv      # Strategy performance
-    ├── integrated_factor_report.txt        # Detailed analysis
-    ├── factor_selection_analysis.png       # 8-panel visualization
-    └── comprehensive_factor_analysis.png   # Factor dashboard
-```
-
-**Key Files to Review**:
-1. `factor_importance_report.csv` - Factor rankings by avg_rank, IC, Sharpe, selection_count
-2. `integrated_factor_report.txt` - Alpha, beta, R-squared, return attribution
-3. `factor_selection_analysis.png` - Visual factor importance analysis
-
-See `RESULTS_README.md` for detailed interpretation guide.
-
----
-
-## Performance Metrics
-
-**Return Metrics:** Total/Annual Return, Volatility, Excess Return
-
-**Risk-Adjusted:** Sharpe, Sortino, Calmar, Information Ratio
-
-**Risk Metrics:** Max Drawdown, VaR, CVaR, Downside Deviation
-
-**Benchmark:** Alpha, Beta, Correlation, Tracking Error
-
----
-
-## Advanced Features
-
-- **Rolling Window Optimization**: 252-day lookback, 60-day minimum
-- **Transaction Cost Modeling**: Bid-ask spread and market impact
-- **Monte Carlo Simulation**: Parametric and bootstrap methods, 10,000+ paths
-- **Multi-Period Analysis**: Performance attribution across market cycles
-- **Factor Selection**: 6 methods to identify top factors from 133-factor library
-- **Factor Timing**: Dynamic factor rotation based on momentum
-
----
-
-## Documentation
-
-- **RESULTS_README.md**: Complete guide to interpreting all output files
-- **FACTOR_ANALYSIS_GUIDE.md**: Detailed factor analysis reference
-- **COMPREHENSIVE_SYSTEM_GUIDE.md**: System architecture
-- **HISTORICAL_ANALYSIS_SUMMARY.md**: 16-year backtest results
+**Documentation:**
+- [RESULTS_README.md](RESULTS_README.md) - Output interpretation guide
+- [FACTOR_ANALYSIS_GUIDE.md](FACTOR_ANALYSIS_GUIDE.md) - Factor analysis reference
+- [COMPREHENSIVE_SYSTEM_GUIDE.md](COMPREHENSIVE_SYSTEM_GUIDE.md) - System architecture
+- [HISTORICAL_ANALYSIS_SUMMARY.md](HISTORICAL_ANALYSIS_SUMMARY.md) - 16-year backtest results
 
 ---
 
