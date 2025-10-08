@@ -500,7 +500,7 @@ def main():
         output_path = 'results/adaptive_optimization_comparison.csv'
         os.makedirs('results', exist_ok=True)
         comparison_df.to_csv(output_path, index=False)
-        print(f"\n✓ Comparison table saved to: {output_path}")
+        print(f"\nComparison table saved to: {output_path}")
 
         print(f"\n{'#'*70}")
         print("#" + " "*68 + "#")
@@ -508,7 +508,7 @@ def main():
         print("#" + " "*68 + "#")
         print(f"{'#'*70}\n")
 
-        print("\n🎯 KEY INSIGHTS:")
+        print("\nKEY INSIGHTS:")
         print("1. The system automatically detected the market regime")
         print("2. Recommended the most suitable optimization method")
         print("3. Generated regime-appropriate portfolio allocation")
@@ -518,7 +518,7 @@ def main():
         plt.show()
 
     except Exception as e:
-        print(f"\n✗ Error: {str(e)}")
+        print(f"\nError: {str(e)}")
         import traceback
         traceback.print_exc()
 

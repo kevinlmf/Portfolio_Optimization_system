@@ -388,53 +388,53 @@ class IntelligentOptimizerSelector:
         # Regime-based reasoning
         if regime in profile['suitable_regimes']:
             reasoning.append(
-                f"✓ Method is specifically designed for {regime.replace('_', ' ')} conditions"
+                f"[+] Method is specifically designed for {regime.replace('_', ' ')} conditions"
             )
         else:
             reasoning.append(
-                f"○ Method has acceptable compatibility with {regime.replace('_', ' ')}"
+                f"[o] Method has acceptable compatibility with {regime.replace('_', ' ')}"
             )
 
         # Asset universe reasoning
         n_assets = config['n_assets']
         if method == 'sparse_sharpe' and n_assets >= 20:
             reasoning.append(
-                f"✓ Large asset universe ({n_assets} assets) benefits from sparse optimization"
+                f"[+] Large asset universe ({n_assets} assets) benefits from sparse optimization"
             )
         elif method in ['equal_weight', 'risk_parity'] and n_assets <= 30:
             reasoning.append(
-                f"✓ Portfolio size ({n_assets} assets) is manageable for this method"
+                f"[+] Portfolio size ({n_assets} assets) is manageable for this method"
             )
 
         # Volatility reasoning
         if config['avg_volatility'] > 0.25:
             if profile['handles_high_vol']:
                 reasoning.append(
-                    f"✓ Method effectively handles high volatility (current: {config['avg_volatility']:.1%})"
+                    f"[+] Method effectively handles high volatility (current: {config['avg_volatility']:.1%})"
                 )
             else:
                 reasoning.append(
-                    f"⚠ Current volatility is high ({config['avg_volatility']:.1%}), monitor closely"
+                    f"[!] Current volatility is high ({config['avg_volatility']:.1%}), monitor closely"
                 )
 
         # Correlation reasoning
         if config['avg_correlation'] > 0.6:
             reasoning.append(
-                f"○ High average correlation ({config['avg_correlation']:.2f}) limits diversification benefits"
+                f"[o] High average correlation ({config['avg_correlation']:.2f}) limits diversification benefits"
             )
 
         # Method-specific strengths
         if method == 'sparse_sharpe':
             reasoning.append(
-                "✓ Global optimality guarantee under certain conditions (see Lin et al. 2024)"
+                "[+] Global optimality guarantee under certain conditions (see Lin et al. 2024)"
             )
         elif method == 'min_variance':
             reasoning.append(
-                "✓ Robust in uncertain markets, prioritizes capital preservation"
+                "[+] Robust in uncertain markets, prioritizes capital preservation"
             )
         elif method == 'equal_weight':
             reasoning.append(
-                "✓ Simple and robust, avoids estimation error in extreme conditions"
+                "[+] Simple and robust, avoids estimation error in extreme conditions"
             )
 
         return reasoning
@@ -512,7 +512,7 @@ class IntelligentOptimizerSelector:
                 'Score': f'{score:.1%}',
                 'Suitable Regimes': ', '.join(profile['suitable_regimes'][:2]),
                 'Concentration': profile['concentration_tendency'],
-                'Handles High Vol': '✓' if profile['handles_high_vol'] else '✗',
+                'Handles High Vol': 'Yes' if profile['handles_high_vol'] else 'No',
                 'Computational Cost': profile['computational_cost'],
                 'Robustness': profile['robustness']
             })

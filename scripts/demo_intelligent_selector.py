@@ -50,8 +50,8 @@ def download_market_data(tickers, start_date, end_date):
     prices = prices.dropna(axis=1, how='all')
     prices = prices.fillna(method='ffill').fillna(method='bfill')
 
-    print(f"✓ Downloaded data for {len(prices.columns)} assets")
-    print(f"✓ {len(prices)} trading days")
+    print(f"Downloaded data for {len(prices.columns)} assets")
+    print(f"{len(prices)} trading days")
 
     return prices
 
@@ -358,7 +358,7 @@ def create_visualization(comparison_df, scenario_df):
     output_path = 'results/intelligent_selector_demo.png'
     os.makedirs('results', exist_ok=True)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"✓ Visualization saved to: {output_path}")
+    print(f"Visualization saved to: {output_path}")
 
     return fig
 
@@ -444,7 +444,7 @@ def main():
         plt.show()
 
     except Exception as e:
-        print(f"\n✗ Error: {str(e)}")
+        print(f"\nError: {str(e)}")
         import traceback
         traceback.print_exc()
 

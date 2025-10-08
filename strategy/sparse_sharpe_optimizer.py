@@ -225,7 +225,7 @@ class SparseSharpeOptimizer:
             if relative_diff < self.tol:
                 converged = True
                 if self.verbose:
-                    print(f"\n✓ Converged at iteration {k+1}")
+                    print(f"\nConverged at iteration {k+1}")
                     print(f"  Relative change: {relative_diff:.2e}")
                 break
 

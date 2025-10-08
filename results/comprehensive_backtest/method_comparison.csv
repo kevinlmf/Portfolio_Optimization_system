@@ -1,0 +1,5 @@
+Method,Total Return,Annual Return,Volatility,Sharpe Ratio,Max Drawdown,Win Rate
+Max Sharpe,60.50%,9.36%,9.03%,0.6934,-9.74%,50.86%
+Min Variance,64.32%,9.84%,10.93%,0.6280,-22.17%,52.51%
+Risk Parity,95.36%,13.50%,11.78%,0.8588,-22.17%,55.59%
+Equal Weight,95.36%,13.50%,11.78%,0.8588,-22.17%,55.59%

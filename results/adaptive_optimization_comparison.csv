@@ -1,6 +1,0 @@
-Method,Recommended,Sharpe Ratio,Annual Return,Annual Vol,Holdings,Max Weight
-Max Sharpe,Yes,2.8198,32.08%,11.35%,8,30.0%
-Min Variance,,1.2084,19.59%,16.18%,22,4.5%
-Risk Parity,,1.2084,19.59%,16.18%,22,4.5%
-Equal Weight,,1.2084,19.59%,16.18%,22,4.5%
-Sparse Sharpe,,0.1496,39.43%,16.57%,7,23.6%
