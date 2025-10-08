@@ -15,7 +15,7 @@ The system demonstrates a production-grade quantitative architecture with:
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/Portfolio_Optimization_system
+git clone https://github.com/kevinlmf/Portfolio_Optimization_system
 cd Portfolio_Optimization_system
 
 # Setup environment
