@@ -142,5 +142,5 @@ system.generate_final_report()
 **Disclaimer**: Educational and research purposes only. Past performance does not guarantee future results.
 ---
 
-May we all find our own **alpha** — in markets and in life.
+May we all find our own **alpha** — in markets and in life.📈
 
