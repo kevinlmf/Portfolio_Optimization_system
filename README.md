@@ -90,28 +90,6 @@ Max Sharpe • Min Variance • Risk Parity • Equal Weight • Sparse Sharpe (
 
 ---
 
-## Usage
-
-```python
-from scripts.comprehensive_portfolio_system import ComprehensivePortfolioSystem
-
-# Initialize and run full pipeline
-system = ComprehensivePortfolioSystem(
-    start_date='2020-01-01',
-    transaction_cost=0.001,
-    rebalance_frequency='monthly'
-)
-
-system.setup_portfolio(scenario='all_assets')
-system.detect_market_regime()
-system.run_backtest(test_multiple_methods=True)
-system.run_monte_carlo_validation(n_simulations=10000)
-system.generate_final_report()
-```
-
-*See [COMPREHENSIVE_SYSTEM_GUIDE.md](COMPREHENSIVE_SYSTEM_GUIDE.md) and [FACTOR_ANALYSIS_GUIDE.md](FACTOR_ANALYSIS_GUIDE.md) for detailed API documentation*
-
----
 
 ## Output & Documentation
 
