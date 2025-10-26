@@ -1,0 +1,21 @@
+Analysis Period: 2020-01-01 to 2024-01-01
+Number of Assets: 22
+Rebalance Frequency: monthly
+
+Market Regime: BULL_MARKET
+  Confidence: 63.2%
+
+Recommended Method: MAX_SHARPE
+
+Backtest Performance:
+  Total Return:         59.57%
+  Annual Return:         9.24%
+  Annual Volatility:    10.56%
+  Sharpe Ratio:         0.5969
+  Max Drawdown:        -19.65%
+  Win Rate:             52.14%
+
+Monte Carlo Validation:
+  Expected Value:     $  1.0803
+  95% VaR:           $  0.9171
+  Prob of Profit:       76.61%
