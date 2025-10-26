@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 *.pkl
 *.ipynb_checkpoints/
+venv/
