@@ -4,11 +4,12 @@ Market-adaptive portfolio optimization system integrating 133-factor analysis, m
 
 ## Key Features
 
-- Bayesian + Mixture Model system with probabilistic regime detection
-- 5 market regimes with adaptive strategy selection
-- 6 optimization methods including globally optimal sparse Sharpe portfolio
-- 133-factor library with 6 selection methods (IC, LASSO, Random Forest, etc.)
-- 16-year backtest (2008-2024): 12.8% annual return, 0.677 Sharpe ratio, 6.6% alpha
+## Key Features
+- 5 market regimes with adaptive strategy selection (including mixture-based regime modeling)  
+- 6 optimization methods including Bayesian and globally optimal sparse Sharpe portfolio  
+- 133-factor library with 6 selection methods (IC, LASSO, Random Forest, etc.)  
+- 16-year backtest (2008–2024): 12.8% annual return, 0.677 Sharpe ratio, 6.6% alpha  
+
 
 ## Quick Start
 
