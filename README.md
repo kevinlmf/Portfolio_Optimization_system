@@ -1,137 +1,185 @@
 # Portfolio Optimization System
 
-Market-adaptive portfolio optimization system integrating 133-factor analysis, market regime detection, intelligent method selection, and multi-asset allocation.
+A complete portfolio optimization workflow system organized by the natural process of portfolio construction.
 
-## Key Features
+## Workflow Overview
 
-- Bayesian + Mixture Model system with probabilistic regime detection
-- 5 market regimes with adaptive strategy selection
-- 6 optimization methods including globally optimal sparse Sharpe portfolio
-- 133-factor library with 6 selection methods (IC, LASSO, Random Forest, etc.)
-- 16-year backtest (2008-2024): 12.8% annual return, 0.677 Sharpe ratio, 6.6% alpha
+The system follows a six-step workflow:
 
-## Quick Start
-
-```bash
-# Clone repository
-git clone https://github.com/your-username/Portfolio_Optimization_system
-cd Portfolio_Optimization_system
-
-# ONE-COMMAND RUN: Execute entire pipeline
-./run.sh
-
-# Or run individual components:
-python scripts/quick_test.py                        # Validation
-python scripts/test_bayesian_system.py              # Bayesian system test
-python scripts/historical_analysis.py               # 16-year backtest
-python scripts/comprehensive_portfolio_system.py    # Full optimization
-```
+1. **Data** - `data/` - Data acquisition and API integration
+2. **Factor Mining** - `workflow/1_factor_mining/` - Extract common factors driving stock returns
+3. **Build Matrix** - `workflow/2_build_matrix/` - Construct stock-factor relationship matrices
+4. **Select Objective** - `workflow/3_select_objective/` - Choose optimization objectives and constraints
+5. **Parameter Estimation** - `workflow/4_estimate_parameters/` - Estimate parameters (μ, F, D, Σ)
+6. **Evaluation** - `workflow/5_evaluation/` - Evaluate portfolio performance and backtesting
 
 ## Project Structure
 
 ```
 Portfolio_Optimization_system/
-├── market/                      # Market regime detection
-│   ├── regime_detector.py       # Traditional detector
-│   └── mixture_regime_model.py  # Mixture-based probabilistic detector
-├── factor/                      # Factor analysis (133 factors)
-│   ├── factor_analyzer.py       # Analysis engine
-│   ├── factor_selection.py      # Factor ranking
-│   └── integrated_factor_system.py
-├── optimization/                # Optimization methods
-│   ├── bayesian_optimizer.py    # Bayesian portfolio optimization
-│   ├── sparse_sharpe_optimizer.py  # Sparse Sharpe (NeurIPS 2024)
-│   └── intelligent_selector.py  # Method selector
-├── evaluation/                  # Backtesting & evaluation
-│   ├── backtesting_engine.py
-│   ├── bayesian_updater.py
-│   └── bayesian_system.py
-├── scripts/                     # Execution scripts
-└── run.sh                       # Master run script
+├── data/                       # Step 0: Data acquisition and API interfaces
+├── workflow/                   # Workflow modules
+│   ├── 1_factor_mining/       # Step 1: Factor mining (PCA, Factor Analysis)
+│   ├── 2_build_matrix/         # Step 2: Build stock-factor matrices (OLS, Ridge)
+│   ├── 3_select_objective/    # Step 3: Select objectives (Sharpe, CVaR, etc.)
+│   ├── 4_estimate_parameters/ # Step 4: Parameter estimation (μ, F, D, Σ)
+│   └── 5_evaluation/         # Step 5: Evaluation and backtesting
+└── workflow.py                # Main workflow script
 ```
 
-## System Pipeline
+## Quick Start
 
-```
-1. DATA → 2. MARKET → 3. FACTOR → 4. OPTIMIZATION → 5. EVALUATION
-   Fetch      Detect     Analyze     Optimize         Backtest
-```
-
-## Core Components
-
-### 1. Bayesian + Mixture Model System
-
-Probabilistic regime detection with soft transitions:
-- Mixture Model: Soft regime probabilities instead of hard classification
-- Bayesian Optimization: Regime-aware portfolio with uncertainty quantification
-- Online Learning: Adaptive posterior updates with anomaly detection
-
-
-### 2. Factor Analysis
-
-- 133-factor library: technical, fundamental, macro, ML, beta
-- 6 selection methods: IC Analysis, LASSO, Random Forest, MI, Forward Selection, Factor Returns
-- Style factors: Fama-French 3/5-factor, Carhart 4-factor models
-- Factor timing: Momentum-based rotation and tilting
-
-### 3. Market Regime Detection
-
-Adaptive strategy selection across 5 regimes:
-
-| Regime | Strategy | Holdings |
-|--------|----------|----------|
-| Bull Market | Max Sharpe | 10-15 |
-| Bear Market | Min Variance | 15-20 |
-| Sideways | Risk Parity | All |
-| High Volatility | Min Variance | 15-20 |
-| Crisis | Equal Weight | All |
-
-### 4. Optimization Methods
-
-- Max Sharpe
-- Min Variance
-- Risk Parity
-- Equal Weight
-- Sparse Sharpe (NeurIPS 2024)
-- Factor-Tilted
-- Bayesian Mean-Variance
-
-### 5. Asset Universe
-
-Equities: AAPL, MSFT, GOOGL, JPM, JNJ | ETFs: SPY, QQQ, VTI, VEA, VWO | Bonds: TLT, IEF, LQD, HYG | Commodities: GLD, SLV, DBC | Crypto: BTC-USD, ETH-USD
-
-### 6. Performance (2008–2024)
-
-Please see detailed performance results in the `results/` folder.
-
-## Usage Examples
-
-### Complete Pipeline
+### Clone the Repository
+git clone https://github.com/kevinlmf/Portfolio_Optimization_system
+cd Portfolio_Optimization_system
 
 ```bash
-./run.sh  # One command runs everything
+cd Portfolio_Optimization_system
 ```
 
+### Install Dependencies
 
+```bash
+pip install numpy pandas scipy scikit-learn yfinance
+```
 
-## Output Files
+### Run Complete Workflow
 
-Key outputs saved to `results/`:
-- `factor_importance_report.csv` - Factor rankings by IC, Sharpe, selection count
-- `integrated_factor_report.txt` - Alpha, beta, R-squared, return attribution
-- `performance_metrics.csv` - Sharpe, Sortino, Calmar, max drawdown, alpha, beta
-- `portfolio_values.csv` - Portfolio value time series
-- `weights_history.csv` - Historical weight allocations
+```bash
+python workflow.py
+```
 
-## Documentation
+## Complete Example
 
-See [FACTOR_ANALYSIS_GUIDE.md](FACTOR_ANALYSIS_GUIDE.md) for detailed factor analysis documentation.
+### Step 1: Factor Mining
 
+**Current Implementation**: **PCA (Principal Component Analysis)** extracts common factors from stock returns.
 
-## Disclaimer
+```python
+from workflow import PortfolioWorkflow, ObjectiveType
 
-Educational and research purposes only. Past performance does not guarantee future results.
+workflow = PortfolioWorkflow(returns)
+factors = workflow.step1_factor_mining(top_n=5, method='pca')
+```
+
+**How it works**: PCA decomposes the covariance matrix to find principal components explaining the most variance. These represent common factors driving stock movements.
+
+**Alternatives**: `'factor_analysis'`, `'statistical'`
+
+### Step 2: Build Correlation Matrix
+
+**Current Implementation**: **OLS regression** estimates factor loadings, then builds correlation matrices.
+
+```python
+factor_loadings = workflow.step2_build_matrix()
+# Regresses each stock's returns on factors: R_i = α + β * F + ε
+# Extracts factor loadings (β) to form B matrix (N x K)
+# Builds correlation matrices between stocks and factors
+```
+
+**How it works**: For each stock, regress returns on factor returns to get factor loadings (B matrix), showing each stock's exposure to factors.
+
+**Alternatives**: `'ridge'` for Ridge regression (handles multicollinearity)
+
+### Step 3: Select Objective
+
+**Current Implementation**: Optimize **Sharpe Ratio** using **Quadratic Programming (QP)**.
+
+```python
+decisions = workflow.step3_select_objective(
+    objective=ObjectiveType.SHARPE,  # Maximize Sharpe ratio
+    constraints={
+        'long_only': True,    # Long-only portfolio
+        'leverage': 1.0,      # No leverage
+        'max_weight': 0.3     # Maximum 30% per asset
+    }
+)
+```
+
+**How it works**: Maximizes Sharpe ratio (expected return / volatility) subject to constraints using QP solver.
+
+**Available objectives**: `SHARPE`, `CVAR`, `RISK_PARITY`, `MIN_VARIANCE`, `MEAN_VARIANCE`
+
+**Available methods**: `'qp'`, `'sparse_sharpe'`
+
+### Step 4: Parameter Estimation
+
+**Current Implementation**: **Sample Estimator** estimates all parameters from historical data.
+
+```python
+knowledge = workflow.step4_estimate_parameters(factors)
+# Contains: μ (expected returns), Σ (covariance), B (factor loadings),
+#           F (factor covariance), D (idiosyncratic risk)
+```
+
+**How it works**: 
+- **μ**: Sample mean of returns
+- **B**: Factor loadings from Step 2
+- **F**: Covariance of factor returns
+- **D**: Residual variances from factor regression
+- **Σ**: Full covariance = B * F * B' + D
+
+**Alternatives**: Bayesian estimators, Shrinkage estimators (extensible)
+
+### Step 5: Evaluation
+
+**Current Implementation**: Evaluates portfolio performance and calculates optimal weights.
+
+```python
+weights = workflow.step5_evaluation(decisions)
+# Calculates: expected return, risk, Sharpe ratio, annualized metrics,
+#             max drawdown, and other performance metrics
+```
+
+**How it works**: Optimizer uses estimated parameters (μ, Σ) and objective to find optimal weights, then evaluates expected performance.
+
+**Metrics**: Annualized return/volatility, Sharpe/Sortino/Calmar ratios, max drawdown, win rate, skewness, kurtosis
+
+### Complete Workflow
+
+```python
+from workflow import PortfolioWorkflow, ObjectiveType
+from data import APIClient
+
+# Get data
+client = APIClient(source='yahoo')
+returns = client.fetch_returns(
+    symbols=['AAPL', 'MSFT', 'GOOGL', 'JPM', 'JNJ'],
+    start_date='2020-01-01',
+    end_date='2023-12-31'
+)
+
+# Run complete workflow
+workflow = PortfolioWorkflow(returns)
+weights = workflow.run_complete_workflow(
+    objective=ObjectiveType.SHARPE,
+    constraints={'long_only': True, 'max_weight': 0.3},
+    n_factors=5,
+    factor_method='pca'
+)
+```
+
+## Future Extensions
+
+The system is designed to be extensible. Potential enhancements include:
+
+- **Factor Mining**: Fama-French factors, dynamic factor selection, nonlinear extraction (autoencoders, ICA)
+- **Correlation Matrix**: Dynamic correlations (DCC-GARCH), copula models, sparse correlation estimation
+- **Objectives**: Multi-objective optimization, robust optimization, regime-aware objectives, transaction cost integration
+- **Parameter Estimation**: Bayesian estimation, shrinkage methods (Ledoit-Wolf), time-varying parameters (Kalman filter), ML-based return prediction
+- **Evaluation**: Out-of-sample backtesting, Monte Carlo simulation, risk/performance attribution, realistic transaction cost modeling
+- **Additional Features**: Multi-period optimization, risk budgeting, ESG integration, alternative data sources, real-time optimization
+
+## Dependencies
+
+- numpy >= 1.20.0
+- pandas >= 1.3.0
+- scipy >= 1.7.0
+- scikit-learn >= 1.0.0
+- yfinance >= 0.2.0
 
 ---
-
-May we all find our own **alpha** — in markets and in life.📈
+Disclaimer
+Educational and research purposes only. Past performance does not guarantee future results.
+---
+May we all find our own alpha — in markets and in life.📈
