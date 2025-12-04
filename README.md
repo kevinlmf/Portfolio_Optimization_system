@@ -107,8 +107,9 @@ python workflow.py
 **Metrics**: Annualized return/volatility, Sharpe/Sortino/Calmar ratios, max drawdown, win rate, skewness, kurtosis
 
 ```
+```
+## Options
 
-## Options Hedging Module（NEW!)
 
 The system includes an optional **Options Hedging** module (`workflow/6_options_hedging/`) that extends portfolio optimization with sophisticated risk management capabilities using options.
 
