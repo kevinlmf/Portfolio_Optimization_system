@@ -5,17 +5,7 @@ Sparse Sharpe Optimizer
 """
 
 import numpy as np
-import sys
-import os
-
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-sys.path.insert(0, project_root)
-
-# Import DecisionSpecs using importlib
-import importlib
-_step3 = importlib.import_module('workflow.3_select_objective.decision_specs', package=None)
-DecisionSpecs = _step3.DecisionSpecs
+from ..decision_specs import DecisionSpecs
 
 
 class SparseSharpeOptimizer:
@@ -58,4 +48,3 @@ class SparseSharpeOptimizer:
         # 暂时返回等权重
         n_assets = returns.shape[1]
         return np.ones(n_assets) / n_assets
-

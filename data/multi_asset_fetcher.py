@@ -88,3 +88,4 @@ class MultiAssetFetcher:
         return aligned_returns, aligned_factors
 
 
+

@@ -1,16 +1,24 @@
 """
-Step 4: Estimate Parameters - 参数估计
+Step 4: Parameter Estimation - 参数估计
 
-Estimate μ, F, D, Σ
-根据优化目标和股票return、cov、factor估计参数
+Estimate parameters (μ, F, D, Σ)
+估计参数
 """
 
-from .expected_returns import ExpectedReturnsEstimator, SampleMeanEstimator
-from .risk_structure import RiskStructureEstimator
-from .dependency_structure import DependencyStructureEstimator
-from .knowledge_base import KnowledgeBase
-from .parameter_estimator import ParameterEstimator
-from .sample_estimator import SampleEstimator
+import sys
+import os
+
+# Add project root to path
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, project_root)
+
+# Import from actual file locations
+from portfolio_layer.parameter_estimation.expected_returns import ExpectedReturnsEstimator, SampleMeanEstimator
+from portfolio_layer.parameter_estimation.risk_structure import RiskStructureEstimator
+from portfolio_layer.parameter_estimation.dependency_structure import DependencyStructureEstimator
+from portfolio_layer.parameter_estimation.knowledge_base import KnowledgeBase
+from portfolio_layer.parameter_estimation.parameter_estimator import ParameterEstimator
+from portfolio_layer.parameter_estimation.sample_estimator import SampleEstimator
 
 __all__ = [
     'ExpectedReturnsEstimator',
@@ -19,5 +27,6 @@ __all__ = [
     'DependencyStructureEstimator',
     'KnowledgeBase',
     'ParameterEstimator',
-    'SampleEstimator'
+    'SampleEstimator',
 ]
+

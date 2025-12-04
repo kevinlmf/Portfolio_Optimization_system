@@ -7,7 +7,12 @@ Factor Risk Model - 因子风险模型
 import numpy as np
 import pandas as pd
 from typing import Tuple, Optional
-from .factor_loadings import FactorLoadingsEstimator
+import sys
+import os
+
+# Import FactorLoadingsEstimator from correct location
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from factor_layer.factor_regression.factor_loadings import FactorLoadingsEstimator
 
 
 class FactorRiskModel:

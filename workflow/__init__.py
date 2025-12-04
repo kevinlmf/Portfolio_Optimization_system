@@ -50,6 +50,14 @@ PortfolioEvaluator = _step5.PortfolioEvaluator
 Backtester = _step5.Backtester
 PerformanceMetrics = _step5.PerformanceMetrics
 
+# Step 6: Options Hedging
+_step6 = importlib.import_module('.6_options_hedging', __package__)
+VolatilityForecaster = _step6.VolatilityForecaster
+BlackScholesPricer = _step6.BlackScholesPricer
+GreeksCalculator = _step6.GreeksCalculator
+DeltaHedgingStrategy = _step6.DeltaHedgingStrategy
+GreeksHedgingStrategy = _step6.GreeksHedgingStrategy
+
 __all__ = [
     # Step 1: Factor Mining
     'FactorMiner',
@@ -79,4 +87,29 @@ __all__ = [
     'PortfolioEvaluator',
     'Backtester',
     'PerformanceMetrics',
+    # Step 6: Options Hedging
+    'VolatilityForecaster',
+    'BlackScholesPricer',
+    'GreeksCalculator',
+    'DeltaHedgingStrategy',
+    'GreeksHedgingStrategy',
 ]
+
+# Import PortfolioWorkflow from workflow.py (avoiding circular import)
+import sys
+import os
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+# Import PortfolioWorkflow from workflow.py file
+import importlib.util
+_workflow_file = os.path.join(_project_root, 'workflow.py')
+if os.path.exists(_workflow_file):
+    spec = importlib.util.spec_from_file_location("workflow_module", _workflow_file)
+    workflow_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(workflow_module)
+    PortfolioWorkflow = workflow_module.PortfolioWorkflow
+    __all__.append('PortfolioWorkflow')
+else:
+    PortfolioWorkflow = None

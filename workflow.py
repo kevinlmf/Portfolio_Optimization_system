@@ -7,8 +7,9 @@ Complete Portfolio Optimization Workflow
 3. Select Objective (选择优化目标)
 4. Parameter Estimation (参数估计: μ, F, D, Σ)
 5. Evaluation (评估/回测)
+6. Options Hedging (期权对冲) - 通过组合预测波动率，计算希腊字母，进行对冲
 
-Run `python workflow.py` to see the complete workflow.
+Use `./run.sh workflow` to run the complete workflow.
 """
 
 import sys
@@ -17,22 +18,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
 import pandas as pd
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
-# Import from workflow package
-from workflow import (
-    # Step 1
-    FactorMiner, FactorSelector,
-    # Step 2
-    FactorLoadingsEstimator, CorrelationMatrixBuilder,
-    # Step 3
-    ObjectiveType, ConstraintBuilder, DecisionSpecs, QPOptimizer,
-    # Step 4
-    SampleEstimator, KnowledgeBase,
-    # Step 5
-    PortfolioEvaluator
-)
-from data import APIClient
+# Import from workflow package directory
+# Use importlib to avoid naming conflict with this file
+import importlib
+
+# Import workflow package components from workflow/ directory
+_workflow_pkg = importlib.import_module('workflow')
+
+FactorMiner = _workflow_pkg.FactorMiner
+FactorLoadingsEstimator = _workflow_pkg.FactorLoadingsEstimator
+ObjectiveType = _workflow_pkg.ObjectiveType
+ConstraintBuilder = _workflow_pkg.ConstraintBuilder
+DecisionSpecs = _workflow_pkg.DecisionSpecs
+QPOptimizer = _workflow_pkg.QPOptimizer
+SampleEstimator = _workflow_pkg.SampleEstimator
+KnowledgeBase = _workflow_pkg.KnowledgeBase
+PortfolioEvaluator = _workflow_pkg.PortfolioEvaluator
+VolatilityForecaster = _workflow_pkg.VolatilityForecaster
+GreeksCalculator = _workflow_pkg.GreeksCalculator
+DeltaHedgingStrategy = _workflow_pkg.DeltaHedgingStrategy
+
+# Import data module
+try:
+    from data import APIClient
+except ImportError:
+    APIClient = None
 
 
 class PortfolioWorkflow:
@@ -40,7 +52,7 @@ class PortfolioWorkflow:
     Complete portfolio optimization workflow following the natural process:
     
     1. Factor Mining → 2. Build Matrix → 3. Select Objective 
-    → 4. Estimate Parameters → 5. Evaluate
+    → 4. Estimate Parameters → 5. Evaluate → 6. Options Hedging
     """
     
     def __init__(self, returns: pd.DataFrame):
@@ -56,6 +68,9 @@ class PortfolioWorkflow:
         self.factor_loadings = None
         self.knowledge = None
         self.portfolio_weights = None
+        self.forecasted_volatility = None
+        self.portfolio_greeks = None
+        self.hedge_solution = None
     
     def step1_factor_mining(self, 
                            top_n: int = 5,
@@ -80,7 +95,8 @@ class PortfolioWorkflow:
         self.factors = miner.mine_factors(self.returns, n_factors=top_n)
         
         print(f"\n✓ Extracted {len(self.factors.columns)} factors")
-        print(f"✓ Explained variance: {np.sum(miner.get_explained_variance()):.2%}")
+        if hasattr(miner, 'get_explained_variance'):
+            print(f"✓ Explained variance: {np.sum(miner.get_explained_variance()):.2%}")
         
         return self.factors
     
@@ -108,7 +124,18 @@ class PortfolioWorkflow:
             raise ValueError("Factors not available. Run step1_factor_mining() first.")
         
         estimator = FactorLoadingsEstimator(method='ols')
-        self.factor_loadings = estimator.estimate(self.returns, factors)
+        
+        # Drop NaN values before estimation
+        common_idx = self.returns.index.intersection(factors.index)
+        returns_clean = self.returns.loc[common_idx].dropna()
+        factors_clean = factors.loc[common_idx].dropna()
+        
+        # Align indices
+        common_idx = returns_clean.index.intersection(factors_clean.index)
+        returns_aligned = returns_clean.loc[common_idx]
+        factors_aligned = factors_clean.loc[common_idx]
+        
+        self.factor_loadings = estimator.estimate(returns_aligned, factors_aligned)
         
         print(f"✓ Factor loadings matrix shape: {self.factor_loadings.shape}")
         print(f"  Assets: {self.factor_loadings.shape[0]}, Factors: {self.factor_loadings.shape[1]}")
@@ -235,6 +262,114 @@ class PortfolioWorkflow:
         
         return self.portfolio_weights
     
+    def step6_options_hedging(self,
+                             spot_price: float,
+                             strike: float,
+                             time_to_expiry: float = 0.25,
+                             risk_free_rate: float = 0.05,
+                             option_type: str = 'call',
+                             hedge_method: str = 'delta',
+                             volatility_method: str = 'portfolio_risk') -> Dict:
+        """
+        Step 6: Options Hedging - 期权对冲
+        
+        通过资产组合构建过程预测波动率，计算希腊字母，进行对冲
+        
+        Args:
+            spot_price: 标的资产现价
+            strike: 期权执行价格
+            time_to_expiry: 到期时间（年）
+            risk_free_rate: 无风险利率
+            option_type: 期权类型 'call' 或 'put'
+            hedge_method: 对冲方法 'delta' 或 'multi_greeks'
+            volatility_method: 波动率预测方法
+        
+        Returns:
+            对冲方案字典
+        """
+        print("\n" + "="*80)
+        print("STEP 6: OPTIONS HEDGING")
+        print("="*80)
+        
+        if self.knowledge is None or self.portfolio_weights is None:
+            raise ValueError("Knowledge base and portfolio weights required. Run steps 1-5 first.")
+        
+        # Step 6.1: 从组合风险结构预测波动率
+        print("\n6.1: Forecasting volatility from portfolio risk structure...")
+        forecaster = VolatilityForecaster(method=volatility_method)
+        
+        if volatility_method == 'portfolio_risk':
+            self.forecasted_volatility = forecaster.forecast_from_portfolio(
+                portfolio_weights=self.portfolio_weights,
+                covariance_matrix=self.knowledge.get_covariance(),
+                horizon=21,
+                annualization=252
+            )
+        else:
+            # 使用收益率序列
+            portfolio_returns = (self.returns * self.portfolio_weights).sum(axis=1)
+            self.forecasted_volatility = forecaster.forecast(
+                returns=portfolio_returns,
+                method=volatility_method
+            )
+        
+        print(f"✓ Forecasted volatility: {self.forecasted_volatility:.4f} ({self.forecasted_volatility*100:.2f}%)")
+        
+        # Step 6.2: 计算希腊字母
+        print("\n6.2: Calculating Greeks...")
+        greeks_calc = GreeksCalculator()
+        
+        # 假设持有1份期权
+        option_quantity = 1.0
+        
+        self.portfolio_greeks = greeks_calc.calculate_all(
+            spot=spot_price,
+            strike=strike,
+            time_to_expiry=time_to_expiry,
+            risk_free_rate=risk_free_rate,
+            volatility=self.forecasted_volatility,
+            option_type=option_type
+        )
+        
+        print(f"✓ Greeks calculated:")
+        print(f"  Δ (Delta): {self.portfolio_greeks['delta']:.4f} - Price sensitivity (Directional exposure)")
+        print(f"  Γ (Gamma): {self.portfolio_greeks['gamma']:.4f} - Delta change rate (Convexity)")
+        print(f"  Θ (Theta): {self.portfolio_greeks['theta']:.4f} - Time decay (Time value)")
+        print(f"  V (Vega): {self.portfolio_greeks['vega']:.4f} - Volatility sensitivity")
+        print(f"  ρ (Rho): {self.portfolio_greeks['rho']:.4f} - Interest rate sensitivity")
+        
+        # Step 6.3: 计算对冲方案
+        print("\n6.3: Calculating hedging strategy...")
+        
+        if hedge_method == 'delta':
+            hedging_strategy = DeltaHedgingStrategy()
+            portfolio_delta = self.portfolio_greeks['delta'] * option_quantity
+            
+            self.hedge_solution = hedging_strategy.calculate_hedge(
+                portfolio_delta=portfolio_delta,
+                spot_price=spot_price,
+                contract_size=100.0
+            )
+            
+            print(f"✓ Delta hedging solution:")
+            print(f"  Hedge quantity: {self.hedge_solution['hedge_quantity']:.2f} shares")
+            print(f"  Hedge value: ${self.hedge_solution['hedge_value']:.2f}")
+            print(f"  Target Delta: {self.hedge_solution['target_delta']:.4f}")
+        
+        else:
+            print(f"  Multi-Greeks hedging not yet implemented in workflow")
+            self.hedge_solution = {'strategy': 'multi_greeks', 'status': 'not_implemented'}
+        
+        print("\n" + "="*80)
+        print("OPTIONS HEDGING COMPLETE")
+        print("="*80)
+        
+        return {
+            'forecasted_volatility': self.forecasted_volatility,
+            'greeks': self.portfolio_greeks,
+            'hedge_solution': self.hedge_solution
+        }
+    
     def run_complete_workflow(self,
                              objective: ObjectiveType = ObjectiveType.SHARPE,
                              constraints: Optional[Dict] = None,
@@ -276,38 +411,3 @@ class PortfolioWorkflow:
         print("="*80)
         
         return weights
-
-
-def main():
-    """Demo of the complete workflow"""
-    print("=" * 80)
-    print("PORTFOLIO OPTIMIZATION WORKFLOW DEMO")
-    print("=" * 80)
-    
-    # Generate sample data
-    np.random.seed(42)
-    dates = pd.date_range('2020-01-01', '2023-12-31', freq='D')
-    assets = ['AAPL', 'MSFT', 'GOOGL', 'JPM', 'JNJ', 'V', 'PG', 'MA', 'DIS', 'NVDA']
-    
-    # Generate returns
-    returns = pd.DataFrame(
-        np.random.randn(len(dates), len(assets)) * 0.01,
-        index=dates,
-        columns=assets
-    )
-    
-    # Initialize workflow
-    workflow = PortfolioWorkflow(returns)
-    
-    # Run complete workflow
-    weights = workflow.run_complete_workflow(
-        objective=ObjectiveType.SHARPE,
-        constraints={'long_only': True, 'max_weight': 0.3},
-        n_factors=5
-    )
-    
-    print(f"\nFinal portfolio weights:\n{weights}")
-
-
-if __name__ == '__main__':
-    main()

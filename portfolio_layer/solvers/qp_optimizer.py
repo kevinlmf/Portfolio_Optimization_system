@@ -7,24 +7,11 @@ Quadratic Programming Optimizer
 import numpy as np
 from scipy.optimize import minimize
 import warnings
-import sys
-import os
-
 warnings.filterwarnings('ignore')
 
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-sys.path.insert(0, project_root)
-
-# Import from correct locations using importlib
-import importlib
-
-# Import DecisionSpecs from workflow.3_select_objective
-_step3 = importlib.import_module('workflow.3_select_objective.decision_specs', package=None)
-DecisionSpecs = _step3.DecisionSpecs
-
-# Import objectives
-from portfolio_layer.objectives.objectives import (
+# Import from parent modules
+from ..decision_specs import DecisionSpecs
+from ..objectives import (
     ObjectiveType,
     SharpeObjective, CVaRObjective, RiskParityObjective,
     MinVarianceObjective, MeanVarianceObjective
@@ -107,4 +94,3 @@ class QPOptimizer:
             return x0
         
         return result.x
-
