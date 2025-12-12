@@ -1,26 +1,6 @@
 # Portfolio Optimization System
 
-A complete portfolio optimization workflow system organized by the natural process of portfolio construction.
-
-## Unified Generative Model
-
-The financial world can be written as:
-
-$$
-\begin{aligned}
-s_t &\sim \text{Markov}(P) & \text{(market regime)} \\
-F_t | s_t &\sim \mathcal{D}_F(s_t) & \text{(factor dynamics)} \\
-r_t | F_t, s_t &= B(s_t)F_t + \varepsilon_t(s_t) & \text{(return model)} \\
-\varepsilon_t(s_t) &\sim \mathcal{N}(0, \Sigma_\varepsilon(s_t)) & \text{(idiosyncratic risk)}
-\end{aligned}
-$$
-
-| Layer | Object | Description |
-|-------|--------|-------------|
-| Hidden State | HMM / Regime | Market state (Bull/Bear) |
-| Intermediate Structure | Factor | Common factors driving returns |
-| Dependency Structure | Correlation / Covariance | Asset dependencies |
-| Decision | Goal + Optimization | Objectives and constraints |
+A market-regime-aware portfolio optimizer built on multi-factor modeling and risk budgeting.
 
 ## Workflow Overview
 
@@ -135,7 +115,8 @@ python workflow.py
 
 ```
 
-## Regime Detection (NEW)
+```
+### Regime Detection (NEW)
 
 The system includes a **Regime Layer** (`regime_layer/`) for HMM-based market regime detection and regime-aware optimization.
 
