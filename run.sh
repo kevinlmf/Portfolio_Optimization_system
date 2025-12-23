@@ -16,26 +16,31 @@ show_help() {
     echo ""
     echo "Usage: ./run.sh [command]"
     echo ""
-    echo "Commands:"
-    echo "  workflow              Run complete workflow (Steps 1-5)"
-    echo "  workflow-regime       Run regime-aware workflow (Steps 0-5) [NEW]"
-    echo "  workflow-options      Run complete workflow with options hedging (Steps 1-6)"
-    echo "  regime-demo           Run regime detection demo only [NEW]"
-    echo "  options-demo          Run options hedging demo only"
+    echo -e "${GREEN}NEW WORKFLOW (推荐):${NC}"
+    echo "  workflow-new          Run NEW workflow: Regime → Factor → Select → Forecast → Optimize"
+    echo "  workflow-new-full     NEW workflow with options hedging (Steps 0-6)"
+    echo ""
+    echo -e "${YELLOW}LEGACY WORKFLOW:${NC}"
+    echo "  workflow              Run legacy workflow (Steps 1-5)"
+    echo "  workflow-regime       Run regime-aware legacy workflow (Steps 0-5)"
+    echo "  workflow-options      Run legacy workflow with options hedging"
+    echo ""
+    echo "Other Commands:"
+    echo "  test                  Quick test of new workflow components"
+    echo "  regime-demo           Run regime detection demo"
+    echo "  options-demo          Run options hedging demo"
     echo "  clean                 Clean cache files (__pycache__)"
     echo "  install               Install dependencies"
     echo "  help                  Show this help message"
     echo ""
-    echo "Regime Strategies (for workflow-regime):"
-    echo "  expected     - Probability-weighted expected parameters (default)"
-    echo "  robust       - Minimax optimization (worst-case)"
-    echo "  adaptive     - Emphasize current regime"
-    echo "  worst_case   - Only consider worst regime"
-    echo "  multi_regime - Joint optimization across all regimes"
+    echo "NEW Workflow Parameters:"
+    echo "  ./run.sh workflow-new [n_stocks] [n_factors] [horizon]"
+    echo "  Default: n_stocks=15, n_factors=5, horizon=21"
     echo ""
     echo "Examples:"
-    echo "  ./run.sh workflow-regime              # Default: 2 regimes, robust strategy"
-    echo "  ./run.sh workflow-regime 3 adaptive   # 3 regimes, adaptive strategy"
+    echo "  ./run.sh workflow-new              # 15 stocks, 5 factors, 21-day forecast"
+    echo "  ./run.sh workflow-new 20 8 42      # 20 stocks, 8 factors, 42-day forecast"
+    echo "  ./run.sh workflow-new-full         # Full workflow with hedging"
     echo ""
 }
 
@@ -57,6 +62,221 @@ check_python() {
 check_python
 
 case "$1" in
+    workflow-new)
+        N_STOCKS=${2:-15}
+        N_FACTORS=${3:-5}
+        HORIZON=${4:-21}
+        echo -e "${BLUE}Running NEW workflow (Steps 0-5)...${NC}"
+        echo -e "${GREEN}  Stocks: $N_STOCKS, Factors: $N_FACTORS, Horizon: $HORIZON days${NC}"
+        $PYTHON_CMD -c "
+import sys
+import os
+import importlib.util
+
+# Get the script directory
+script_dir = os.getcwd()
+sys.path.insert(0, script_dir)
+
+# Import workflow.py directly
+workflow_file = os.path.join(script_dir, 'workflow.py')
+spec = importlib.util.spec_from_file_location('workflow_module', workflow_file)
+workflow_mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(workflow_mod)
+PortfolioWorkflow = workflow_mod.PortfolioWorkflow
+
+import numpy as np
+import pandas as pd
+
+print('=' * 80)
+print('NEW PORTFOLIO OPTIMIZATION WORKFLOW')
+print('Regime → Factor → Select → Forecast → Optimize')
+print('=' * 80)
+
+# Generate sample data with 50 stocks (larger universe)
+np.random.seed(42)
+n_samples = 500
+
+# Create a larger universe of stocks
+sectors = {
+    'Tech': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'AMD', 'INTC', 'CRM'],
+    'Finance': ['JPM', 'BAC', 'GS', 'MS', 'C', 'WFC', 'BLK', 'SCHW', 'AXP', 'USB'],
+    'Health': ['JNJ', 'UNH', 'PFE', 'MRK', 'ABBV', 'TMO', 'ABT', 'LLY', 'BMY', 'AMGN'],
+    'Consumer': ['PG', 'KO', 'PEP', 'WMT', 'COST', 'HD', 'MCD', 'NKE', 'SBUX', 'TGT'],
+    'Energy': ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO', 'OXY', 'HAL']
+}
+
+all_assets = []
+for sector_assets in sectors.values():
+    all_assets.extend(sector_assets)
+
+n_assets = len(all_assets)
+print(f'Universe: {n_assets} stocks across {len(sectors)} sectors')
+
+# Simulate regime-switching returns
+P = np.array([[0.92, 0.08], [0.15, 0.85]])  # Transition matrix
+regimes = np.zeros(n_samples, dtype=int)
+for t in range(1, n_samples):
+    regimes[t] = np.random.choice([0, 1], p=P[regimes[t-1]])
+
+# Generate returns with sector correlation structure
+returns_data = np.zeros((n_samples, n_assets))
+for t in range(n_samples):
+    # Market factor
+    market = np.random.randn() * (0.012 if regimes[t] == 0 else 0.025)
+    
+    # Sector factors
+    sector_factors = {s: np.random.randn() * 0.008 for s in sectors}
+    
+    for i, asset in enumerate(all_assets):
+        # Find sector
+        for sector, assets in sectors.items():
+            if asset in assets:
+                break
+        
+        # Beta varies by sector and regime
+        if sector == 'Tech':
+            beta = 1.3 if regimes[t] == 0 else 1.5
+        elif sector == 'Finance':
+            beta = 1.1 if regimes[t] == 0 else 1.4
+        elif sector == 'Health':
+            beta = 0.7 if regimes[t] == 0 else 0.8
+        elif sector == 'Consumer':
+            beta = 0.6 if regimes[t] == 0 else 0.7
+        else:  # Energy
+            beta = 1.0 if regimes[t] == 0 else 1.2
+        
+        # Return = market * beta + sector + idiosyncratic + regime drift
+        drift = 0.0005 if regimes[t] == 0 else -0.0002
+        returns_data[t, i] = (market * beta + 
+                             sector_factors[sector] * 0.5 + 
+                             np.random.randn() * 0.01 + 
+                             drift)
+
+dates = pd.date_range('2022-01-01', periods=n_samples, freq='D')
+returns = pd.DataFrame(returns_data, index=dates, columns=all_assets)
+
+print(f'Data: {n_samples} days')
+print(f'True regime distribution: Bull={sum(regimes==0)}, Bear={sum(regimes==1)}')
+
+# Create sector info
+sector_info = pd.Series(index=all_assets, dtype=str)
+for sector, assets in sectors.items():
+    for asset in assets:
+        sector_info[asset] = sector
+
+# Initialize workflow with regime mode
+workflow = PortfolioWorkflow(returns, use_regime=True)
+
+# Run NEW complete workflow
+print('\n' + '='*80)
+print('STARTING NEW WORKFLOW')
+print('='*80)
+
+weights = workflow.run_complete_workflow(
+    n_regimes=2,
+    n_factors=$N_FACTORS,
+    n_stocks=$N_STOCKS,
+    horizon=$HORIZON,
+    constraints={'long_only': True, 'max_weight': 0.15, 'leverage': 1.0},
+    regime_strategy='robust',
+    include_hedging=False
+)
+
+# Results
+print('\n' + '='*80)
+print('FINAL RESULTS')
+print('='*80)
+
+selected = workflow.selected_stocks
+print(f'\nSelected {len(selected)} stocks from {n_assets} universe:')
+
+# Show weights by sector
+sector_weights = {}
+for stock in selected:
+    sector = sector_info[stock]
+    idx = selected.index(stock)
+    if sector not in sector_weights:
+        sector_weights[sector] = []
+    sector_weights[sector].append((stock, weights[idx]))
+
+for sector in sorted(sector_weights.keys()):
+    total = sum(w for _, w in sector_weights[sector])
+    print(f'\n  {sector} ({total:.1%} total):')
+    for stock, w in sorted(sector_weights[sector], key=lambda x: -x[1]):
+        if w > 0.01:
+            print(f'    {stock}: {w:.2%}')
+
+# Calculate portfolio returns
+selected_returns = returns[selected]
+portfolio_returns = (selected_returns * weights).sum(axis=1)
+cumulative_returns = (1 + portfolio_returns).cumprod()
+total_return = cumulative_returns.iloc[-1] - 1
+ann_return = (cumulative_returns.iloc[-1] ** (252 / len(returns)) - 1)
+ann_vol = portfolio_returns.std() * np.sqrt(252)
+sharpe = ann_return / ann_vol if ann_vol > 0 else 0
+
+print(f'\n' + '='*80)
+print('PORTFOLIO PERFORMANCE')
+print('='*80)
+print(f'  Total Return: {total_return*100:.2f}%')
+print(f'  Annualized Return: {ann_return*100:.2f}%')
+print(f'  Annualized Volatility: {ann_vol*100:.2f}%')
+print(f'  Sharpe Ratio: {sharpe:.2f}')
+print(f'  Final Portfolio Value: \${cumulative_returns.iloc[-1]:.4f} (from \$1.00)')
+"
+        ;;
+    workflow-new-full)
+        N_STOCKS=${2:-15}
+        N_FACTORS=${3:-5}
+        HORIZON=${4:-21}
+        echo -e "${BLUE}Running NEW workflow with hedging (Steps 0-6)...${NC}"
+        echo -e "${GREEN}  Stocks: $N_STOCKS, Factors: $N_FACTORS, Horizon: $HORIZON days${NC}"
+        $PYTHON_CMD -c "
+import sys
+import os
+import importlib.util
+
+script_dir = os.getcwd()
+sys.path.insert(0, script_dir)
+
+workflow_file = os.path.join(script_dir, 'workflow.py')
+spec = importlib.util.spec_from_file_location('workflow_module', workflow_file)
+workflow_mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(workflow_mod)
+PortfolioWorkflow = workflow_mod.PortfolioWorkflow
+
+import numpy as np
+import pandas as pd
+
+print('=' * 80)
+print('NEW PORTFOLIO OPTIMIZATION WORKFLOW (WITH HEDGING)')
+print('=' * 80)
+
+# Generate sample data
+np.random.seed(42)
+n_samples = 500
+assets = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'JPM', 'JNJ', 'PG', 'XOM',
+          'BAC', 'GS', 'UNH', 'HD', 'V', 'MA', 'DIS', 'NFLX', 'ADBE', 'CRM']
+
+returns_data = np.random.randn(n_samples, len(assets)) * 0.015 + 0.0005
+dates = pd.date_range('2022-01-01', periods=n_samples, freq='D')
+returns = pd.DataFrame(returns_data, index=dates, columns=assets)
+
+print(f'Universe: {len(assets)} stocks, {n_samples} days')
+
+workflow = PortfolioWorkflow(returns, use_regime=True)
+
+weights = workflow.run_complete_workflow(
+    n_regimes=2,
+    n_factors=$N_FACTORS,
+    n_stocks=$N_STOCKS,
+    horizon=$HORIZON,
+    include_hedging=True
+)
+
+print('\n✓ Workflow complete with options hedging!')
+"
+        ;;
     workflow-regime)
         N_REGIMES=${2:-2}
         REGIME_STRATEGY=${3:-robust}
@@ -141,6 +361,10 @@ print(f'  Total Return: {total_return*100:.2f}%')
 print(f'  Annualized Return: {annualized_return*100:.2f}%')
 print(f'  Final Portfolio Value: \${cumulative_returns.iloc[-1]:.4f} (from \$1.00)')
 "
+        ;;
+    test)
+        echo -e "${BLUE}Running new workflow test...${NC}"
+        $PYTHON_CMD test_new_workflow.py
         ;;
     regime-demo)
         echo -e "${BLUE}Running regime detection demo...${NC}"

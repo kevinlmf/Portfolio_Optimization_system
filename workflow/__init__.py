@@ -1,12 +1,14 @@
 """
 Complete Portfolio Optimization Workflow
 
-按照实际工作流程：
-1. Factor Mining (挖掘因子)
-2. Build Matrix (构建股票-因子关系矩阵 B)
-3. Select Objective (选择优化目标)
-4. Parameter Estimation (参数估计: μ, F, D, Σ)
-5. Evaluation (评估/回测)
+New Workflow (按照实际投资决策流程):
+0. Regime Detection (市场状态检测) - 决定后续一切
+1. Factor Mining (挖掘因子) - 根据市场状态挖掘有效因子
+2. Stock Selection (因子选股) - 根据因子暴露选股
+3. Forecasting (收益与风险预测) - 预测选中股票的收益和协方差
+4. Select Objective (选择优化目标) - 根据预测结果选择目标
+5. Optimization (组合优化) - 求解最优权重
+6. Options Hedging (期权对冲) - 对冲风险
 """
 
 # Use importlib to avoid circular imports with numeric module names
@@ -18,33 +20,45 @@ FactorMiner = _step1.FactorMiner
 FactorSelector = _step1.FactorSelector
 FactorAnalyzer = _step1.FactorAnalyzer
 
-# Step 2: Build Matrix
-_step2 = importlib.import_module('.2_build_matrix', __package__)
-FactorLoadingsEstimator = _step2.FactorLoadingsEstimator
-CorrelationMatrixBuilder = _step2.CorrelationMatrixBuilder
-FactorRiskModel = _step2.FactorRiskModel
+# Step 2: Stock Selection (NEW)
+_step2_selection = importlib.import_module('.2_stock_selection', __package__)
+StockSelector = _step2_selection.StockSelector
+SelectionResult = _step2_selection.SelectionResult
 
-# Step 3: Select Objective
-_step3 = importlib.import_module('.3_select_objective', __package__)
-ObjectiveType = _step3.ObjectiveType
-ObjectiveFunction = _step3.ObjectiveFunction
-Constraints = _step3.Constraints
-ConstraintBuilder = _step3.ConstraintBuilder
-DecisionSpecs = _step3.DecisionSpecs
-QPOptimizer = _step3.QPOptimizer
-SparseSharpeOptimizer = _step3.SparseSharpeOptimizer
+# Step 2 (old): Build Matrix - kept for backward compatibility
+_step2_matrix = importlib.import_module('.2_build_matrix', __package__)
+FactorLoadingsEstimator = _step2_matrix.FactorLoadingsEstimator
+CorrelationMatrixBuilder = _step2_matrix.CorrelationMatrixBuilder
+FactorRiskModel = _step2_matrix.FactorRiskModel
 
-# Step 4: Parameter Estimation
-_step4 = importlib.import_module('.4_estimate_parameters', __package__)
-ExpectedReturnsEstimator = _step4.ExpectedReturnsEstimator
-SampleMeanEstimator = _step4.SampleMeanEstimator
-RiskStructureEstimator = _step4.RiskStructureEstimator
-DependencyStructureEstimator = _step4.DependencyStructureEstimator
-KnowledgeBase = _step4.KnowledgeBase
-ParameterEstimator = _step4.ParameterEstimator
-SampleEstimator = _step4.SampleEstimator
+# Step 3: Forecasting (NEW)
+_step3_forecast = importlib.import_module('.3_forecasting', __package__)
+ReturnForecaster = _step3_forecast.ReturnForecaster
+CovarianceForecaster = _step3_forecast.CovarianceForecaster
+EnsembleForecaster = _step3_forecast.EnsembleForecaster
+ForecastResult = _step3_forecast.ForecastResult
 
-# Step 5: Evaluation
+# Step 4: Select Objective (was Step 3)
+_step4_objective = importlib.import_module('.3_select_objective', __package__)
+ObjectiveType = _step4_objective.ObjectiveType
+ObjectiveFunction = _step4_objective.ObjectiveFunction
+Constraints = _step4_objective.Constraints
+ConstraintBuilder = _step4_objective.ConstraintBuilder
+DecisionSpecs = _step4_objective.DecisionSpecs
+QPOptimizer = _step4_objective.QPOptimizer
+SparseSharpeOptimizer = _step4_objective.SparseSharpeOptimizer
+
+# Step 4 (old): Parameter Estimation - kept for backward compatibility
+_step4_params = importlib.import_module('.4_estimate_parameters', __package__)
+ExpectedReturnsEstimator = _step4_params.ExpectedReturnsEstimator
+SampleMeanEstimator = _step4_params.SampleMeanEstimator
+RiskStructureEstimator = _step4_params.RiskStructureEstimator
+DependencyStructureEstimator = _step4_params.DependencyStructureEstimator
+KnowledgeBase = _step4_params.KnowledgeBase
+ParameterEstimator = _step4_params.ParameterEstimator
+SampleEstimator = _step4_params.SampleEstimator
+
+# Step 5: Evaluation/Optimization
 _step5 = importlib.import_module('.5_evaluation', __package__)
 PortfolioEvaluator = _step5.PortfolioEvaluator
 Backtester = _step5.Backtester
@@ -81,11 +95,19 @@ __all__ = [
     'FactorMiner',
     'FactorSelector',
     'FactorAnalyzer',
-    # Step 2: Build Matrix
+    # Step 2: Stock Selection (NEW)
+    'StockSelector',
+    'SelectionResult',
+    # Step 2 (legacy): Build Matrix
     'FactorLoadingsEstimator',
     'CorrelationMatrixBuilder',
     'FactorRiskModel',
-    # Step 3: Select Objective
+    # Step 3: Forecasting (NEW)
+    'ReturnForecaster',
+    'CovarianceForecaster',
+    'EnsembleForecaster',
+    'ForecastResult',
+    # Step 4: Select Objective
     'ObjectiveType',
     'ObjectiveFunction',
     'Constraints',
@@ -93,7 +115,7 @@ __all__ = [
     'DecisionSpecs',
     'QPOptimizer',
     'SparseSharpeOptimizer',
-    # Step 4: Parameter Estimation
+    # Step 4 (legacy): Parameter Estimation
     'ExpectedReturnsEstimator',
     'SampleMeanEstimator',
     'RiskStructureEstimator',
@@ -101,7 +123,7 @@ __all__ = [
     'KnowledgeBase',
     'ParameterEstimator',
     'SampleEstimator',
-    # Step 5: Evaluation
+    # Step 5: Evaluation/Optimization
     'PortfolioEvaluator',
     'Backtester',
     'PerformanceMetrics',
